@@ -54,7 +54,7 @@ class SaveSystem {
     }
 
     // Save game state (with optional force flag)
-    save(gameState, force = false) {
+    async save(gameState, force = false) {
         // Throttle saves unless forced
         const now = Date.now();
         if (!force && now - this.lastSaveTime < this.saveThrottleMs) {
@@ -73,6 +73,8 @@ class SaveSystem {
                     coins: gameState.inventory.coins,
                     items: gameState.inventory.items,
                     ownedClothes: gameState.inventory.ownedClothes,
+                    ownedToys: gameState.inventory.ownedToys,
+                    ownedHouseItems: gameState.inventory.ownedHouseItems,
                 },
                 progress: {
                     level: gameState.petStats.level || 1,
@@ -83,7 +85,20 @@ class SaveSystem {
                 },
             };
 
+            // Save to localStorage (always as fallback)
             localStorage.setItem(this.storageKey, JSON.stringify(saveData));
+
+            // Also save to Supabase if authenticated
+            if (typeof supabaseClient !== 'undefined' && supabaseClient.isAuthenticated()) {
+                await supabaseClient.saveAllData({
+                    petStats: gameState.petStats,
+                    inventory: gameState.inventory,
+                    highScores: gameState.highScores || {},
+                    totalGamesPlayed: gameState.totalGamesPlayed || 0,
+                });
+                console.log('Saved to both localStorage and Supabase');
+            }
+
             this.lastSaveTime = now;
             return true;
         } catch (e) {

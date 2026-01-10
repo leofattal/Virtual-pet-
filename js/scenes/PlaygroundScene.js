@@ -14,10 +14,10 @@ class PlaygroundScene extends Phaser.Scene {
         const groundY = CONFIG.HEIGHT - 180;
         this.equipmentZones = {
             swing: { x: 120, y: groundY - 60, radius: 70 },
-            slide: { x: 300, y: groundY - 70, radius: 80 },
-            trampoline: { x: 480, y: groundY - 40, radius: 70 },
-            museum: { x: 620, y: groundY - 90, radius: 70 },
-            snowhill: { x: 750, y: groundY - 50, radius: 70 },
+            slide: { x: 280, y: groundY - 70, radius: 80 },
+            trampoline: { x: 450, y: groundY - 40, radius: 70 },
+            museum: { x: 580, y: groundY - 90, radius: 70 },
+            snowhill: { x: 710, y: groundY - 50, radius: 70 },
         };
 
         // Create playground equipment
@@ -184,7 +184,7 @@ class PlaygroundScene extends Phaser.Scene {
         const groundY = CONFIG.HEIGHT - 180; // Ground level
         const platformHeight = 140; // How tall the platform is
         const platformTop = groundY - platformHeight;
-        const slideX = 380;
+        const slideX = 280;
 
         const slide = this.add.graphics();
 
@@ -246,7 +246,7 @@ class PlaygroundScene extends Phaser.Scene {
 
     createTrampoline() {
         const groundY = CONFIG.HEIGHT - 180; // Ground level
-        const trampolineX = 650;
+        const trampolineX = 450;
         const frameHeight = 35; // Height of frame above ground
         const surfaceY = groundY - frameHeight;
 
@@ -301,7 +301,7 @@ class PlaygroundScene extends Phaser.Scene {
 
     createMuseum() {
         const groundY = CONFIG.HEIGHT - 180;
-        const museumX = 620;
+        const museumX = 580;
 
         const museum = this.add.graphics();
 
@@ -368,7 +368,7 @@ class PlaygroundScene extends Phaser.Scene {
 
     createSnowHill() {
         const groundY = CONFIG.HEIGHT - 180;
-        const hillX = 750;
+        const hillX = 710;
 
         const snowHill = this.add.graphics();
 
@@ -1536,33 +1536,6 @@ class PlaygroundScene extends Phaser.Scene {
             this.cameras.main.fadeOut(300, 0, 0, 0);
             this.time.delayedCall(300, () => {
                 this.scene.start(CONFIG.SCENES.HOME);
-            });
-        });
-
-        // Arcade button
-        const arcadeBtn = this.add.container(CONFIG.WIDTH - 70, CONFIG.HEIGHT - 40);
-
-        const arcadeBg = this.add.graphics();
-        arcadeBg.fillStyle(CONFIG.COLORS.ACCENT, 1);
-        arcadeBg.fillRect(-50, -20, 100, 40);
-        arcadeBg.fillStyle(0xffa000, 1);
-        arcadeBg.fillRect(-46, -16, 92, 32);
-
-        const arcadeText = this.add.text(0, 0, '🕹️ Arcade', {
-            fontSize: CONFIG.FONT.SIZE_SMALL,
-            fontFamily: CONFIG.FONT.FAMILY,
-            color: '#1a1a2e',
-        }).setOrigin(0.5);
-
-        arcadeBtn.add([arcadeBg, arcadeText]);
-        arcadeBtn.setSize(100, 40);
-        arcadeBtn.setInteractive({ useHandCursor: true });
-
-        arcadeBtn.on('pointerdown', () => {
-            soundManager.playClick();
-            this.cameras.main.fadeOut(300, 0, 0, 0);
-            this.time.delayedCall(300, () => {
-                this.scene.start(CONFIG.SCENES.ARCADE);
             });
         });
     }

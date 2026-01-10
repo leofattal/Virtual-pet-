@@ -321,23 +321,41 @@ class KitchenScene extends Phaser.Scene {
         this.tableX = tableX;
         this.tableY = tableY;
 
-        // Populate with owned food
-        this.refreshFoodTray();
+        // Populate with owned food - delay slightly to ensure inventory is ready
+        this.time.delayedCall(50, () => {
+            this.refreshFoodTray();
+        });
     }
 
     refreshFoodTray() {
-        // Safety check - ensure scene is still active
+        // Safety check - ensure scene is still active and table is initialized
         if (!this.sys || !this.sys.isActive()) return;
+        if (!this.platePositions || !this.foodTrayContainer) return;
+
+        // Initialize foodItems array if it doesn't exist
+        if (!this.foodItems) {
+            this.foodItems = [];
+        }
 
         // Clear existing food items
         this.foodItems.forEach(item => {
-            if (item && item.container) {
-                item.container.destroy();
+            if (item && item.container && item.container.scene) {
+                try {
+                    item.container.destroy();
+                } catch (e) {
+                    // Item already destroyed
+                }
             }
         });
         this.foodItems = [];
 
+        // Get owned food from inventory
         const ownedFood = inventory.getOwnedFood();
+
+        // Debug log to verify food is loaded
+        if (ownedFood.length > 0) {
+            console.log('Kitchen: Displaying', ownedFood.length, 'food items on plates');
+        }
 
         // Show up to 4 food items on plates
         const displayFood = ownedFood.slice(0, 4);
@@ -347,14 +365,18 @@ class KitchenScene extends Phaser.Scene {
                 const platePos = this.platePositions[index];
                 const foodX = this.tableX + platePos.x;
                 const foodY = this.tableY + platePos.y - 12;
-                const foodItem = this.createDraggableFood(foodX, foodY, food);
-                this.foodItems.push({
-                    container: foodItem,
-                    food: food,
-                    homeX: foodX,
-                    homeY: foodY,
-                    plateIndex: index,
-                });
+                try {
+                    const foodItem = this.createDraggableFood(foodX, foodY, food);
+                    this.foodItems.push({
+                        container: foodItem,
+                        food: food,
+                        homeX: foodX,
+                        homeY: foodY,
+                        plateIndex: index,
+                    });
+                } catch (e) {
+                    console.error('Error creating food item:', e);
+                }
             }
         });
     }

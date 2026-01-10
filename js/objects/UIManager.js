@@ -26,14 +26,20 @@ class UIManager {
                 fontFamily: CONFIG.FONT.FAMILY,
                 color: '#ffffff',
             });
+            label.setDepth(1000); // Ensure labels are on top
 
             // Background bar
             const bgBar = this.scene.add.graphics();
             bgBar.fillStyle(0x333333, 1);
             bgBar.fillRect(x + 85, barY, 120, 20);
+            // Add border to make bars more visible
+            bgBar.lineStyle(2, 0x666666, 1);
+            bgBar.strokeRect(x + 85, barY, 120, 20);
+            bgBar.setDepth(1000); // Ensure bars are on top
 
             // Fill bar
             const fillBar = this.scene.add.graphics();
+            fillBar.setDepth(1001); // Fill bars on top of background bars
 
             // Store references
             this.elements.statBars[stat.key] = {
@@ -44,22 +50,38 @@ class UIManager {
                 x: x + 85,
                 y: barY,
             };
+
+            // Initialize the fill bar immediately with current value
+            const currentValue = petStats.getAll()[stat.key] || 0;
+            const initialWidth = (currentValue / CONFIG.MAX_STAT) * 116;
+            fillBar.fillStyle(stat.color, 1);
+            fillBar.fillRect(x + 85 + 2, barY + 2, initialWidth, 16);
         });
 
-        this.updateStatBars();
+        // Also update after a short delay to ensure everything is loaded
+        this.scene.time.delayedCall(100, () => {
+            this.updateStatBars();
+        });
     }
 
     // Update stat bar fills
     updateStatBars() {
         // Safety check - ensure scene is still active
         if (!this.scene || !this.scene.sys || !this.scene.sys.isActive()) return;
+        if (!this.elements.statBars) return;
 
         try {
             const stats = petStats.getAll();
 
             for (const key in this.elements.statBars) {
                 const bar = this.elements.statBars[key];
-                if (!bar || !bar.fillBar || !bar.fillBar.active) continue;
+                if (!bar || !bar.fillBar) continue;
+
+                // Check if fillBar still exists in scene
+                if (!bar.fillBar.scene || !bar.fillBar.active) {
+                    console.warn('Stat bar fillBar not active for', key);
+                    continue;
+                }
 
                 const value = stats[key] || 0;
                 const fillWidth = (value / CONFIG.MAX_STAT) * 116;
@@ -69,7 +91,7 @@ class UIManager {
                 bar.fillBar.fillRect(bar.x + 2, bar.y + 2, fillWidth, 16);
             }
         } catch (e) {
-            // Elements may have been destroyed
+            console.error('Error updating stat bars:', e);
         }
     }
 
@@ -80,12 +102,14 @@ class UIManager {
         coinIcon.fillCircle(x, y + 10, 12);
         coinIcon.fillStyle(0xffa000, 1);
         coinIcon.fillCircle(x, y + 10, 8);
+        coinIcon.setDepth(1000);
 
         this.elements.coinText = this.scene.add.text(x + 20, y, `${inventory.coins}`, {
             fontSize: CONFIG.FONT.SIZE_MEDIUM,
             fontFamily: CONFIG.FONT.FAMILY,
             color: '#ffca28',
         });
+        this.elements.coinText.setDepth(1000);
 
         this.elements.coinIcon = coinIcon;
     }
@@ -110,13 +134,16 @@ class UIManager {
             fontFamily: CONFIG.FONT.FAMILY,
             color: '#ffffff',
         });
+        this.elements.levelText.setDepth(1000);
 
         // XP bar
         const bgBar = this.scene.add.graphics();
         bgBar.fillStyle(0x333333, 1);
         bgBar.fillRect(x, y + 25, 100, 10);
+        bgBar.setDepth(1000);
 
         this.elements.xpBar = this.scene.add.graphics();
+        this.elements.xpBar.setDepth(1001);
         this.elements.xpBarX = x;
         this.elements.xpBarY = y + 25;
 

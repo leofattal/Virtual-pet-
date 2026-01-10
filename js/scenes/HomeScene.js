@@ -23,6 +23,9 @@ class HomeScene extends Phaser.Scene {
         // Create room doors (Kitchen, Bedroom, Closet)
         this.createRoomDoors();
 
+        // Create house items (if purchased)
+        this.createHouseItems();
+
         // Create pet
         this.pet = new Pet(this, CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 + 20);
 
@@ -247,10 +250,11 @@ class HomeScene extends Phaser.Scene {
 
     createRoomDoors() {
         // Create doors to different rooms - Kitchen next to Bedroom
-        this.createDoor(150, '🛏️ Bedroom', CONFIG.SCENES.BEDROOM, 0x7986cb);
-        this.createDoor(300, '🍽️ Kitchen', CONFIG.SCENES.KITCHEN, 0xff7043);
-        this.createDoor(500, '👗 Closet', CONFIG.SCENES.CLOSET, 0xce93d8);
-        this.createDoor(650, '🎮 Arcade', CONFIG.SCENES.ARCADE, 0x4dd0e1);
+        this.createDoor(120, '🛏️ Bedroom', CONFIG.SCENES.BEDROOM, 0x7986cb);
+        this.createDoor(240, '🍽️ Kitchen', CONFIG.SCENES.KITCHEN, 0xff7043);
+        this.createDoor(400, '👗 Closet', CONFIG.SCENES.CLOSET, 0xce93d8);
+        this.createDoor(520, '🎮 Arcade', CONFIG.SCENES.ARCADE, 0x4dd0e1);
+        this.createDoor(680, '💼 Work', CONFIG.SCENES.WORK, 0x66bb6a);
     }
 
     createDoor(x, label, sceneKey, accentColor) {
@@ -393,6 +397,173 @@ class HomeScene extends Phaser.Scene {
         this.cameras.main.fadeOut(2000, 0, 0, 0);
         this.time.delayedCall(2000, () => {
             this.scene.start(CONFIG.SCENES.FUNERAL);
+        });
+    }
+
+    createHouseItems() {
+        // Check which house items are owned and display them
+        const ownedHouseItems = inventory.ownedHouseItems || [];
+
+        console.log('HomeScene: Creating house items. Owned items:', ownedHouseItems);
+
+        // Position for house items (right side of room)
+        const itemPositions = {
+            jacuzzi: { x: 680, y: 200 },
+            spa: { x: 550, y: 280 },
+            pooltable: { x: 100, y: 240 },
+            tvgaming: { x: 280, y: 100 },
+            bookshelf: { x: 50, y: 100 },
+            musicstation: { x: 720, y: 120 },
+        };
+
+        ownedHouseItems.forEach(itemId => {
+            const item = getItemById(itemId);
+            const pos = itemPositions[itemId];
+
+            console.log('Creating house item:', itemId, item, pos);
+
+            if (item && pos) {
+                this.createHouseItem(pos.x, pos.y, item);
+            }
+        });
+    }
+
+    createHouseItem(x, y, item) {
+        const container = this.add.container(x, y);
+        const graphics = this.add.graphics();
+
+        // Draw the item based on its type
+        switch (item.id) {
+            case 'jacuzzi':
+                // Hot tub
+                graphics.fillStyle(0x00bcd4, 1);
+                graphics.fillEllipse(0, 0, 80, 50);
+                graphics.fillStyle(0x0097a7, 1);
+                graphics.fillEllipse(0, -5, 70, 40);
+                // Bubbles
+                for (let i = 0; i < 5; i++) {
+                    graphics.fillStyle(0xffffff, 0.5);
+                    graphics.fillCircle(-20 + i * 10, -8, 3);
+                }
+                break;
+
+            case 'spa':
+                // Spa station
+                graphics.fillStyle(0xce93d8, 1);
+                graphics.fillRect(-30, -20, 60, 40);
+                graphics.fillStyle(0xba68c8, 1);
+                graphics.fillRect(-25, -15, 50, 30);
+                break;
+
+            case 'pooltable':
+                // Pool table
+                graphics.fillStyle(0x4caf50, 1);
+                graphics.fillRect(-40, -25, 80, 50);
+                graphics.fillStyle(0x388e3c, 1);
+                graphics.fillRect(-35, -20, 70, 40);
+                // Balls
+                graphics.fillStyle(0xffffff, 1);
+                graphics.fillCircle(-10, 0, 4);
+                graphics.fillStyle(0xf44336, 1);
+                graphics.fillCircle(10, 5, 4);
+                break;
+
+            case 'tvgaming':
+                // TV and console
+                graphics.fillStyle(0x212121, 1);
+                graphics.fillRect(-35, -25, 70, 50);
+                graphics.fillStyle(0x1565c0, 1);
+                graphics.fillRect(-30, -20, 60, 40);
+                // Controller
+                graphics.fillStyle(0x9c27b0, 1);
+                graphics.fillRect(-10, 30, 20, 8);
+                break;
+
+            case 'bookshelf':
+                // Bookshelf
+                graphics.fillStyle(0x8d6e63, 1);
+                graphics.fillRect(-30, -40, 60, 80);
+                // Shelves
+                graphics.lineStyle(3, 0x6d4c41);
+                graphics.lineBetween(-30, -10, 30, -10);
+                graphics.lineBetween(-30, 15, 30, 15);
+                // Books
+                for (let i = 0; i < 4; i++) {
+                    const colors = [0xef5350, 0x42a5f5, 0x66bb6a, 0xffeb3b];
+                    graphics.fillStyle(colors[i], 1);
+                    graphics.fillRect(-25 + i * 13, -35, 10, 20);
+                }
+                break;
+
+            case 'musicstation':
+                // Music station
+                graphics.fillStyle(0xff5722, 1);
+                graphics.fillRect(-25, -20, 50, 40);
+                // Speakers
+                graphics.fillStyle(0x424242, 1);
+                graphics.fillCircle(-15, 0, 8);
+                graphics.fillCircle(15, 0, 8);
+                // Notes
+                graphics.fillStyle(0xffd54f, 1);
+                graphics.fillCircle(-5, -25, 4);
+                graphics.fillCircle(5, -28, 4);
+                break;
+        }
+
+        container.add(graphics);
+
+        // Label
+        const label = this.add.text(0, 45, item.name, {
+            fontSize: '10px',
+            fontFamily: CONFIG.FONT.FAMILY,
+            color: '#ffffff',
+            backgroundColor: '#00000080',
+            padding: { x: 4, y: 2 },
+        }).setOrigin(0.5);
+        container.add(label);
+
+        // Make interactive
+        container.setSize(80, 80);
+        container.setInteractive({ useHandCursor: true });
+
+        container.on('pointerdown', () => {
+            this.useHouseItem(item);
+        });
+    }
+
+    useHouseItem(item) {
+        soundManager.playClick();
+
+        // Special case: Gaming Setup opens the Arcade
+        if (item.id === 'tvgaming') {
+            this.cameras.main.fadeOut(300, 0, 0, 0);
+            this.time.delayedCall(300, () => {
+                this.scene.start(CONFIG.SCENES.ARCADE);
+            });
+            return;
+        }
+
+        // Apply item effects
+        const effects = item.effects;
+        for (const stat in effects) {
+            petStats.modifyStat(stat, effects[stat]);
+        }
+
+        // Show feedback
+        const effectText = [];
+        if (effects.cleanliness) effectText.push(`${effects.cleanliness > 0 ? '+' : ''}${effects.cleanliness} 💧`);
+        if (effects.happiness) effectText.push(`${effects.happiness > 0 ? '+' : ''}${effects.happiness} 💖`);
+        if (effects.energy) effectText.push(`${effects.energy > 0 ? '+' : ''}${effects.energy} ⚡`);
+
+        this.ui.showToast(`Used ${item.name}! ${effectText.join(' ')}`);
+
+        // Pet animation - jump for joy
+        this.tweens.add({
+            targets: this.pet.container,
+            y: this.pet.container.y - 30,
+            duration: 200,
+            yoyo: true,
+            ease: 'Quad.easeOut',
         });
     }
 

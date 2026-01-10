@@ -17,6 +17,9 @@ class BedroomScene extends Phaser.Scene {
         // Create the bed
         this.createBed();
 
+        // Create toy box with owned toys
+        this.createToyBox();
+
         // Create pet
         this.pet = new Pet(this, CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 + 50);
 
@@ -348,6 +351,106 @@ class BedroomScene extends Phaser.Scene {
 
         // Bed zone for dropping pet
         this.bedZone = { x: bedX, y: bedY - 20, radius: 100 };
+    }
+
+    createToyBox() {
+        // Create toy box in corner
+        const boxX = 100;
+        const boxY = CONFIG.HEIGHT - 180;
+
+        const toyBox = this.add.graphics();
+        toyBox.fillStyle(0x8d6e63, 1);
+        toyBox.fillRect(boxX - 40, boxY - 30, 80, 60);
+        toyBox.lineStyle(3, 0x6d4c41);
+        toyBox.strokeRect(boxX - 40, boxY - 30, 80, 60);
+
+        // Lid
+        toyBox.fillStyle(0x6d4c41, 1);
+        toyBox.fillRect(boxX - 42, boxY - 35, 84, 8);
+
+        // Label
+        this.add.text(boxX, boxY - 55, '🎾 Toy Box', {
+            fontSize: '12px',
+            fontFamily: CONFIG.FONT.FAMILY,
+            color: '#ffffff',
+            backgroundColor: '#00000080',
+            padding: { x: 6, y: 2 },
+        }).setOrigin(0.5);
+
+        // Get owned toys
+        const ownedToys = inventory.getOwnedToys();
+
+        if (ownedToys.length === 0) {
+            // Show "empty" message
+            this.add.text(boxX, boxY, 'Empty\nBuy toys!', {
+                fontSize: '10px',
+                fontFamily: CONFIG.FONT.FAMILY,
+                color: '#999999',
+                align: 'center',
+            }).setOrigin(0.5);
+        } else {
+            // Display toys in a row
+            ownedToys.slice(0, 3).forEach((toy, index) => {
+                const toyX = boxX - 30 + index * 30;
+                const toyY = boxY + 10;
+
+                const toyContainer = this.add.container(toyX, toyY);
+                const toyGraphic = this.add.graphics();
+
+                // Simple toy icon
+                toyGraphic.fillStyle(toy.color, 1);
+                toyGraphic.fillCircle(0, 0, 12);
+
+                toyContainer.add(toyGraphic);
+
+                // Make interactive
+                toyContainer.setSize(24, 24);
+                toyContainer.setInteractive({ useHandCursor: true });
+
+                toyContainer.on('pointerdown', () => {
+                    this.useToy(toy);
+                });
+            });
+
+            // Show "+ more" if there are more toys
+            if (ownedToys.length > 3) {
+                this.add.text(boxX, boxY + 35, `+${ownedToys.length - 3} more`, {
+                    fontSize: '9px',
+                    fontFamily: CONFIG.FONT.FAMILY,
+                    color: '#b0b0b0',
+                }).setOrigin(0.5);
+            }
+        }
+    }
+
+    useToy(toy) {
+        soundManager.playHappy();
+
+        // Toys are unlimited - don't remove from inventory
+
+        // Apply toy effects
+        const effects = toy.effects;
+        for (const stat in effects) {
+            petStats.modifyStat(stat, effects[stat]);
+        }
+
+        // Show feedback
+        const effectText = [];
+        if (effects.happiness) effectText.push(`${effects.happiness > 0 ? '+' : ''}${effects.happiness} 💖`);
+        if (effects.energy) effectText.push(`${effects.energy > 0 ? '+' : ''}${effects.energy} ⚡`);
+
+        this.ui.showToast(`Played with ${toy.name}! ${effectText.join(' ')}`);
+
+        // Pet animation - spin for joy
+        this.tweens.add({
+            targets: this.pet.container,
+            angle: 360,
+            duration: 500,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                this.pet.container.angle = 0;
+            },
+        });
     }
 
     createDropZone() {

@@ -218,13 +218,14 @@ class ShopScene extends Phaser.Scene {
             { key: 'food', label: '🍎 Food' },
             { key: 'clothes', label: '👕 Clothes' },
             { key: 'toys', label: '🎾 Toys' },
+            { key: 'house', label: '🏠 House' },
         ];
 
         this.categoryTabs = {};
         const tabY = 90;
 
         categories.forEach((cat, index) => {
-            const tabX = 100 + index * 130;
+            const tabX = 80 + index * 115;
             const tab = this.add.container(tabX, tabY);
 
             const bg = this.add.graphics();
@@ -290,6 +291,8 @@ class ShopScene extends Phaser.Scene {
             items = Object.values(ITEMS.clothes);
         } else if (this.currentCategory === 'toys') {
             items = Object.values(ITEMS.toys);
+        } else if (this.currentCategory === 'house') {
+            items = Object.values(ITEMS.house);
         }
 
         // Create item grid
@@ -315,9 +318,15 @@ class ShopScene extends Phaser.Scene {
         const width = 120;
         const height = 100;
 
-        // Check if already owned (for clothes)
-        const isOwned = (item.category === 'hat' || item.category === 'accessory') &&
-                        inventory.ownsClothing(item.id);
+        // Check if already owned (for clothes, toys, and house items)
+        let isOwned = false;
+        if (item.category === 'hat' || item.category === 'accessory') {
+            isOwned = inventory.ownedClothes.includes(item.id);
+        } else if (item.category === 'toy') {
+            isOwned = inventory.ownedToys.includes(item.id);
+        } else if (item.category === 'house') {
+            isOwned = inventory.ownedHouseItems.includes(item.id);
+        }
         const canAfford = inventory.canAfford(item.price);
 
         // Background

@@ -377,6 +377,64 @@ const ITEMS = {
             description: 'Cute playtime doll',
         },
     },
+
+    // House Upgrades - permanent additions to your home
+    house: {
+        jacuzzi: {
+            id: 'jacuzzi',
+            name: 'Jacuzzi',
+            price: 500,
+            category: 'house',
+            effects: { cleanliness: 50, happiness: 30, energy: 20 },
+            color: 0x00bcd4,
+            description: 'Luxury hot tub for ultimate relaxation',
+        },
+        spa: {
+            id: 'spa',
+            name: 'Spa Station',
+            price: 400,
+            category: 'house',
+            effects: { cleanliness: 40, happiness: 25 },
+            color: 0xce93d8,
+            description: 'Professional spa treatment at home',
+        },
+        pooltable: {
+            id: 'pooltable',
+            name: 'Pool Table',
+            price: 300,
+            category: 'house',
+            effects: { happiness: 35, energy: -5 },
+            color: 0x4caf50,
+            description: 'Play pool for fun and entertainment',
+        },
+        tvgaming: {
+            id: 'tvgaming',
+            name: 'Gaming Setup',
+            price: 350,
+            category: 'house',
+            effects: { happiness: 40, energy: -15 },
+            color: 0x9c27b0,
+            description: 'Big TV and gaming console',
+        },
+        bookshelf: {
+            id: 'bookshelf',
+            name: 'Bookshelf',
+            price: 150,
+            category: 'house',
+            effects: { happiness: 20 },
+            color: 0x8d6e63,
+            description: 'Reading corner with lots of books',
+        },
+        musicstation: {
+            id: 'musicstation',
+            name: 'Music Station',
+            price: 250,
+            category: 'house',
+            effects: { happiness: 30 },
+            color: 0xff5722,
+            description: 'Instruments and sound system',
+        },
+    },
 };
 
 // Helper to get all items as flat array

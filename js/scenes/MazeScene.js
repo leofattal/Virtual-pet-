@@ -686,8 +686,8 @@ class MazeScene extends Phaser.Scene {
             window.gameHighScores.maze = this.score;
         }
 
-        // Award flat 3 coins for playing
-        const coinsEarned = 3;
+        // Award coins proportional to score (1 coin per 10 points, minimum 1)
+        const coinsEarned = Math.max(1, Math.floor(this.score / 10));
         try {
             inventory.addCoins(coinsEarned);
         } catch (e) {

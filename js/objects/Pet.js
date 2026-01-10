@@ -225,6 +225,55 @@ class Pet {
                 this.sprite.fillRect(4, hatY + 8, 12, 10);
                 this.sprite.fillRect(-4, hatY + 10, 8, 6);
                 break;
+
+            case 'hat_beanie':
+                // Winter beanie
+                this.sprite.fillRect(-22, hatY + 4, 44, 12);
+                this.sprite.fillRect(-18, hatY - 4, 36, 8);
+                // Pom pom on top
+                this.sprite.fillCircle(0, hatY - 8, 6);
+                break;
+
+            case 'hat_tophat':
+                // Top hat (tall formal hat)
+                this.sprite.fillRect(-16, hatY + 8, 32, 8);
+                this.sprite.fillRect(-12, hatY - 20, 24, 28);
+                this.sprite.fillStyle(0x424242, 1);
+                this.sprite.fillRect(-10, hatY - 2, 20, 6);
+                break;
+
+            case 'hat_pirate':
+                // Pirate hat
+                this.sprite.fillRect(-24, hatY + 6, 48, 10);
+                this.sprite.fillRect(-20, hatY - 2, 40, 8);
+                // Skull and crossbones
+                this.sprite.fillStyle(0xffffff, 1);
+                this.sprite.fillCircle(0, hatY + 2, 4);
+                break;
+
+            case 'hat_bunny':
+                // Bunny ears
+                this.sprite.fillRect(-16, hatY, 10, 20);
+                this.sprite.fillRect(6, hatY, 10, 20);
+                // Inner ear
+                this.sprite.fillStyle(0xffffff, 1);
+                this.sprite.fillRect(-14, hatY + 4, 6, 12);
+                this.sprite.fillRect(8, hatY + 4, 6, 12);
+                break;
+
+            case 'hat_chef':
+                // Chef hat
+                this.sprite.fillRect(-20, hatY + 8, 40, 8);
+                this.sprite.fillRect(-16, hatY - 8, 32, 16);
+                this.sprite.fillCircle(-10, hatY - 6, 6);
+                this.sprite.fillCircle(0, hatY - 8, 6);
+                this.sprite.fillCircle(10, hatY - 6, 6);
+                break;
+
+            default:
+                // Generic hat if ID not recognized
+                this.sprite.fillRect(-20, hatY, 40, 16);
+                break;
         }
     }
 
@@ -267,6 +316,67 @@ class Pet {
                 this.sprite.fillRect(30, bpY, 20, 35);
                 this.sprite.fillStyle(0x6d4c41, 1);
                 this.sprite.fillRect(32, bpY + 5, 16, 8);
+                break;
+
+            case 'bowtie':
+                // Bow tie
+                const btY = 30 + this.bobOffset;
+                this.sprite.fillRect(-12, btY, 10, 8);
+                this.sprite.fillRect(2, btY, 10, 8);
+                this.sprite.fillRect(-4, btY + 2, 8, 4);
+                break;
+
+            case 'cape':
+                // Superhero cape (behind pet)
+                const capeY = 10 + this.bobOffset;
+                this.sprite.fillStyle(item.color, 0.9);
+                this.sprite.fillRect(28, capeY - 10, 18, 40);
+                this.sprite.fillRect(30, capeY + 30, 14, 10);
+                // Cape collar
+                this.sprite.fillStyle(0xffd700, 1);
+                this.sprite.fillRect(22, capeY - 12, 8, 6);
+                break;
+
+            case 'necklace':
+                // Golden necklace
+                const neckY = 28 + this.bobOffset;
+                this.sprite.fillRect(-14, neckY, 28, 4);
+                // Pendant
+                this.sprite.fillCircle(0, neckY + 8, 6);
+                this.sprite.fillStyle(0xe53935, 1);
+                this.sprite.fillCircle(0, neckY + 8, 4);
+                break;
+
+            case 'headphones':
+                // Headphones
+                const hpY = -18 + this.bobOffset;
+                // Headband
+                this.sprite.fillRect(-4, hpY - 10, 8, 4);
+                // Ear cups
+                this.sprite.fillRect(-28, hpY, 12, 16);
+                this.sprite.fillRect(16, hpY, 12, 16);
+                this.sprite.fillStyle(0x616161, 1);
+                this.sprite.fillRect(-26, hpY + 2, 8, 12);
+                this.sprite.fillRect(18, hpY + 2, 8, 12);
+                break;
+
+            case 'flower':
+                // Flower accessory (on head/ear)
+                const flY = -32 + this.bobOffset;
+                // Petals
+                this.sprite.fillCircle(-22, flY, 5);
+                this.sprite.fillCircle(-18, flY - 4, 5);
+                this.sprite.fillCircle(-18, flY + 4, 5);
+                this.sprite.fillCircle(-14, flY, 5);
+                // Center
+                this.sprite.fillStyle(0xffeb3b, 1);
+                this.sprite.fillCircle(-18, flY, 3);
+                break;
+
+            default:
+                // Generic accessory if ID not recognized
+                const accY = 0 + this.bobOffset;
+                this.sprite.fillRect(-8, accY, 16, 16);
                 break;
         }
     }

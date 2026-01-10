@@ -5,6 +5,8 @@ class Inventory {
         this.coins = CONFIG.STARTING_COINS;
         this.items = {}; // { itemId: quantity }
         this.ownedClothes = []; // Array of owned clothing item IDs
+        this.ownedHouseItems = []; // Array of owned house upgrade IDs
+        this.ownedToys = []; // Array of owned toy IDs (permanent like clothes)
         this.listeners = [];
         console.log('Inventory initialized with', this.coins, 'coins');
     }
@@ -83,8 +85,24 @@ class Inventory {
                 return { success: false, message: 'Already owned!' };
             }
             this.ownedClothes.push(item.id);
+        } else if (item.category === 'house') {
+            // House items are permanent purchases
+            if (this.ownedHouseItems.includes(item.id)) {
+                // Refund if already owned
+                this.addCoins(item.price);
+                return { success: false, message: 'Already owned!' };
+            }
+            this.ownedHouseItems.push(item.id);
+        } else if (item.category === 'toy') {
+            // Toys are permanent purchases (unlimited use)
+            if (this.ownedToys.includes(item.id)) {
+                // Refund if already owned
+                this.addCoins(item.price);
+                return { success: false, message: 'Already owned!' };
+            }
+            this.ownedToys.push(item.id);
         } else {
-            // Consumables go to inventory
+            // Only food is consumable
             this.addItem(item.id);
         }
 
@@ -110,15 +128,15 @@ class Inventory {
         return food;
     }
 
-    // Get all owned toys
+    // Get all owned toys (permanent items)
     getOwnedToys() {
         const toys = [];
-        for (const itemId in this.items) {
-            const item = getItemById(itemId);
-            if (item && item.category === 'toy') {
-                toys.push({ ...item, quantity: this.items[itemId] });
+        this.ownedToys.forEach(toyId => {
+            const item = getItemById(toyId);
+            if (item) {
+                toys.push(item);
             }
-        }
+        });
         return toys;
     }
 
@@ -130,6 +148,8 @@ class Inventory {
             this.coins = (typeof savedCoins === 'number' && savedCoins >= 0) ? savedCoins : CONFIG.STARTING_COINS;
             this.items = saveData.inventory.items ?? {};
             this.ownedClothes = saveData.inventory.ownedClothes ?? [];
+            this.ownedHouseItems = saveData.inventory.ownedHouseItems ?? [];
+            this.ownedToys = saveData.inventory.ownedToys ?? [];
             console.log('Inventory loaded from save:', this.coins, 'coins, items:', this.items);
         }
         this.notifyListeners();

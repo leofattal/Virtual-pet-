@@ -477,6 +477,9 @@ class BathroomScene extends Phaser.Scene {
         const showerZone = this.add.zone(showerX, showerY + 50, 80, 100);
         showerZone.setInteractive({ useHandCursor: true });
 
+        // Store shower zone for drag highlighting
+        this.showerZone = { x: showerX, y: showerY + 50, radius: 60 };
+
         // Label
         this.add.text(showerX, 210, '🚿 Shower', {
             fontSize: '11px',
@@ -582,6 +585,9 @@ class BathroomScene extends Phaser.Scene {
         const toiletZone = this.add.zone(toiletX, toiletY - 30, 60, 80);
         toiletZone.setInteractive({ useHandCursor: true });
 
+        // Store toilet zone for drag highlighting
+        this.toiletZone = { x: toiletX, y: toiletY - 30, radius: 50 };
+
         // Label
         this.add.text(toiletX, toiletY + 70, '🚽 Toilet', {
             fontSize: '11px',
@@ -625,9 +631,15 @@ class BathroomScene extends Phaser.Scene {
             });
         }
 
-        // Show message
+        // Give small happiness bonus
         this.time.delayedCall(300, () => {
-            const flushText = this.add.text(x, y - 60, '💨 Flush!', {
+            try {
+                petStats.modifyStat('happiness', 5);
+            } catch (e) {
+                console.warn('Error updating stats:', e);
+            }
+
+            const flushText = this.add.text(x, y - 60, '💨 Flush! +5 Happy', {
                 fontSize: '14px',
                 fontFamily: CONFIG.FONT.FAMILY,
                 color: '#4fc3f7',
@@ -672,6 +684,9 @@ class BathroomScene extends Phaser.Scene {
         // Make interactive
         this.toothbrushContainer.setSize(20, 70);
         this.toothbrushContainer.setInteractive({ useHandCursor: true });
+
+        // Store toothbrush zone for drag highlighting
+        this.toothbrushZone = { x: brushX, y: brushY, radius: 45 };
 
         // Label
         const label = this.add.text(0, 60, '🪥 Brush', {
@@ -751,6 +766,99 @@ class BathroomScene extends Phaser.Scene {
         });
     }
 
+    usedShower() {
+        soundManager.playClean();
+
+        // Move pet to shower
+        this.tweens.add({
+            targets: this.petContainer,
+            x: this.showerZone.x,
+            y: this.showerZone.y + 30,
+            duration: 300,
+            onComplete: () => {
+                // Trigger shower water
+                this.startShower(this.showerZone.x, this.showerZone.y - 50);
+
+                // After shower animation, return pet home
+                this.time.delayedCall(1800, () => {
+                    this.tweens.add({
+                        targets: this.petContainer,
+                        x: this.petHomeX,
+                        y: this.petHomeY,
+                        duration: 300,
+                        ease: 'Back.easeOut',
+                        onComplete: () => {
+                            this.startIdleBounce();
+                            this.dragIndicator.setVisible(true);
+                        },
+                    });
+                });
+            },
+        });
+    }
+
+    usedToilet() {
+        soundManager.playClick();
+
+        // Move pet to toilet
+        this.tweens.add({
+            targets: this.petContainer,
+            x: this.toiletZone.x,
+            y: this.toiletZone.y + 20,
+            duration: 300,
+            onComplete: () => {
+                // Trigger flush
+                this.flushToilet(this.toiletZone.x, this.toiletZone.y);
+
+                // After animation, return pet home
+                this.time.delayedCall(1000, () => {
+                    this.tweens.add({
+                        targets: this.petContainer,
+                        x: this.petHomeX,
+                        y: this.petHomeY,
+                        duration: 300,
+                        ease: 'Back.easeOut',
+                        onComplete: () => {
+                            this.startIdleBounce();
+                            this.dragIndicator.setVisible(true);
+                        },
+                    });
+                });
+            },
+        });
+    }
+
+    usedToothbrush() {
+        soundManager.playClick();
+
+        // Move pet to toothbrush
+        this.tweens.add({
+            targets: this.petContainer,
+            x: this.toothbrushZone.x + 30,
+            y: this.toothbrushZone.y,
+            duration: 300,
+            onComplete: () => {
+                // Trigger brush teeth
+                this.brushTeeth();
+
+                // After animation, return pet home
+                this.time.delayedCall(1000, () => {
+                    this.tweens.add({
+                        targets: this.petContainer,
+                        x: this.petHomeX,
+                        y: this.petHomeY,
+                        duration: 300,
+                        ease: 'Back.easeOut',
+                        onComplete: () => {
+                            this.startIdleBounce();
+                            this.dragIndicator.setVisible(true);
+                        },
+                    });
+                });
+            },
+        });
+    }
+
     createDraggablePet() {
         // Pet starts outside the tub
         this.petHomeX = 200;
@@ -790,29 +898,40 @@ class BathroomScene extends Phaser.Scene {
             }
             this.petContainer.setScale(1.1);
             this.dragIndicator.setVisible(false);
-            this.showTubHighlight(true);
         });
 
         this.petContainer.on('drag', (pointer, dragX, dragY) => {
             if (this.isAnimating) return;
             this.petContainer.x = dragX;
             this.petContainer.y = dragY;
+            // Show highlights for nearby zones while dragging
+            this.showAllZoneHighlights(true);
         });
 
         this.petContainer.on('dragend', () => {
             if (this.isAnimating) return;
 
             this.petContainer.setScale(1);
-            this.showTubHighlight(false);
+            this.showAllZoneHighlights(false);
 
-            // Check if dropped in tub
-            const dist = Phaser.Math.Distance.Between(
-                this.petContainer.x, this.petContainer.y,
-                this.tubZone.x, this.tubZone.y
-            );
+            const petX = this.petContainer.x;
+            const petY = this.petContainer.y;
 
-            if (dist < this.tubZone.radius && !this.petInTub) {
+            // Check distance to each zone
+            const distToTub = Phaser.Math.Distance.Between(petX, petY, this.tubZone.x, this.tubZone.y);
+            const distToShower = Phaser.Math.Distance.Between(petX, petY, this.showerZone.x, this.showerZone.y);
+            const distToToilet = Phaser.Math.Distance.Between(petX, petY, this.toiletZone.x, this.toiletZone.y);
+            const distToToothbrush = Phaser.Math.Distance.Between(petX, petY, this.toothbrushZone.x, this.toothbrushZone.y);
+
+            // Check which zone the pet was dropped in (closest one wins)
+            if (distToTub < this.tubZone.radius && !this.petInTub) {
                 this.putPetInTub();
+            } else if (distToShower < this.showerZone.radius) {
+                this.usedShower();
+            } else if (distToToilet < this.toiletZone.radius) {
+                this.usedToilet();
+            } else if (distToToothbrush < this.toothbrushZone.radius) {
+                this.usedToothbrush();
             } else if (!this.petInTub) {
                 // Return home
                 this.tweens.add({
@@ -853,6 +972,42 @@ class BathroomScene extends Phaser.Scene {
             this.tubHighlight.strokeCircle(this.tubZone.x, this.tubZone.y, this.tubZone.radius);
             this.tubHighlight.fillStyle(0x4fc3f7, 0.15);
             this.tubHighlight.fillCircle(this.tubZone.x, this.tubZone.y, this.tubZone.radius);
+        }
+    }
+
+    showAllZoneHighlights(show) {
+        if (!this.zoneHighlights) {
+            this.zoneHighlights = this.add.graphics();
+        }
+
+        this.zoneHighlights.clear();
+
+        if (show && this.petContainer) {
+            const petX = this.petContainer.x;
+            const petY = this.petContainer.y;
+
+            // Array of all interactive zones
+            const zones = [
+                this.tubZone,
+                this.showerZone,
+                this.toiletZone,
+                this.toothbrushZone
+            ];
+
+            // Show blue circle for zones that are close to the pet
+            zones.forEach(zone => {
+                if (zone) {
+                    const dist = Phaser.Math.Distance.Between(petX, petY, zone.x, zone.y);
+
+                    // Show highlight if pet is within range
+                    if (dist < zone.radius + 80) {
+                        this.zoneHighlights.lineStyle(4, 0x4fc3f7, 0.8);
+                        this.zoneHighlights.strokeCircle(zone.x, zone.y, zone.radius);
+                        this.zoneHighlights.fillStyle(0x4fc3f7, 0.15);
+                        this.zoneHighlights.fillCircle(zone.x, zone.y, zone.radius);
+                    }
+                }
+            });
         }
     }
 

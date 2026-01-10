@@ -394,8 +394,8 @@ class FlappyScene extends Phaser.Scene {
             window.gameHighScores.flappy = this.score;
         }
 
-        // Award flat 3 coins for playing
-        const coinsEarned = 3;
+        // Award coins proportional to score (1 coin per 5 points, minimum 1)
+        const coinsEarned = Math.max(1, Math.floor(this.score / 5));
         try {
             inventory.addCoins(coinsEarned);
         } catch (e) {

@@ -28,6 +28,7 @@ window.addEventListener('load', () => {
             },
         },
         scene: [
+            LoginScene,
             BootScene,
             NamingScene,
             HomeScene,
@@ -38,9 +39,11 @@ window.addEventListener('load', () => {
             ArcadeScene,
             FlappyScene,
             MazeScene,
+            ClickerScene,
             ShopScene,
             BathroomScene,
             FuneralScene,
+            WorkScene,
         ],
     };
 

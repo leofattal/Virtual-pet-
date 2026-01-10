@@ -6,6 +6,27 @@ class ArcadeScene extends Phaser.Scene {
     }
 
     create() {
+        // Check if player owns Gaming Setup
+        const hasGamingSetup = inventory.ownedHouseItems && inventory.ownedHouseItems.includes('tvgaming');
+
+        if (!hasGamingSetup) {
+            // Show error message and return to home
+            const errorText = this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2, '🔒 Purchase Gaming Setup from the Shop first!', {
+                fontSize: CONFIG.FONT.SIZE_LARGE,
+                fontFamily: CONFIG.FONT.FAMILY,
+                color: '#ff5252',
+                backgroundColor: '#00000080',
+                padding: { x: 20, y: 10 },
+            }).setOrigin(0.5);
+
+            soundManager.playError();
+
+            this.time.delayedCall(2000, () => {
+                this.scene.start(CONFIG.SCENES.HOME);
+            });
+            return;
+        }
+
         // Create background
         this.createBackground();
 
@@ -125,15 +146,24 @@ class ArcadeScene extends Phaser.Scene {
                 icon: '👻',
                 scene: CONFIG.SCENES.MAZE,
             },
+            {
+                key: 'clicker',
+                name: 'Coin Rush',
+                description: 'Click fast!\nEarn coins quickly.',
+                color: 0xffca28,
+                icon: '💰',
+                scene: 'ClickerScene',
+            },
         ];
 
-        const cardWidth = 280;
-        const cardHeight = 320;
-        const startX = CONFIG.WIDTH / 2 - (games.length * cardWidth + (games.length - 1) * 40) / 2 + cardWidth / 2;
+        const cardWidth = 240;
+        const cardHeight = 280;
+        const spacing = 30;
+        const startX = CONFIG.WIDTH / 2 - (games.length * cardWidth + (games.length - 1) * spacing) / 2 + cardWidth / 2;
         const cardY = CONFIG.HEIGHT / 2 + 20;
 
         games.forEach((game, index) => {
-            const x = startX + index * (cardWidth + 40);
+            const x = startX + index * (cardWidth + spacing);
             this.createGameCard(x, cardY, game, cardWidth, cardHeight);
         });
     }
@@ -287,7 +317,7 @@ class ArcadeScene extends Phaser.Scene {
             soundManager.playClick();
             this.cameras.main.fadeOut(300, 0, 0, 0);
             this.time.delayedCall(300, () => {
-                this.scene.start(CONFIG.SCENES.PLAYGROUND);
+                this.scene.start(CONFIG.SCENES.HOME);
             });
         });
     }

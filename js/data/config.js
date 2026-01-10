@@ -97,5 +97,6 @@ const CONFIG = {
         SHOP: 'ShopScene',
         BATHROOM: 'BathroomScene',
         FUNERAL: 'FuneralScene',
+        WORK: 'WorkScene',
     },
 };
