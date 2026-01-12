@@ -44,6 +44,9 @@ window.addEventListener('load', () => {
             BathroomScene,
             FuneralScene,
             WorkScene,
+            TrophyRoomScene,
+            MemoryGameScene,
+            GardenScene,
         ],
     };
 

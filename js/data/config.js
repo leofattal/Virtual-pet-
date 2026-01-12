@@ -98,5 +98,8 @@ const CONFIG = {
         BATHROOM: 'BathroomScene',
         FUNERAL: 'FuneralScene',
         WORK: 'WorkScene',
+        TROPHY_ROOM: 'TrophyRoom',
+        MEMORY_GAME: 'MemoryGame',
+        GARDEN: 'Garden',
     },
 };

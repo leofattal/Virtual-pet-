@@ -249,16 +249,22 @@ class HomeScene extends Phaser.Scene {
     }
 
     createRoomDoors() {
-        // Create doors to different rooms - Kitchen next to Bedroom
-        this.createDoor(120, '🛏️ Bedroom', CONFIG.SCENES.BEDROOM, 0x7986cb);
-        this.createDoor(240, '🍽️ Kitchen', CONFIG.SCENES.KITCHEN, 0xff7043);
-        this.createDoor(400, '👗 Closet', CONFIG.SCENES.CLOSET, 0xce93d8);
-        this.createDoor(520, '🎮 Arcade', CONFIG.SCENES.ARCADE, 0x4dd0e1);
-        this.createDoor(680, '💼 Work', CONFIG.SCENES.WORK, 0x66bb6a);
+        // Create doors to different rooms - 2 rows
+        // Top row
+        this.createDoor(100, '🛏️ Bedroom', CONFIG.SCENES.BEDROOM, 0x7986cb, 0);
+        this.createDoor(200, '🍽️ Kitchen', CONFIG.SCENES.KITCHEN, 0xff7043, 0);
+        this.createDoor(300, '👗 Closet', CONFIG.SCENES.CLOSET, 0xce93d8, 0);
+        this.createDoor(400, '🎮 Arcade', CONFIG.SCENES.ARCADE, 0x4dd0e1, 0);
+        this.createDoor(500, '💼 Work', CONFIG.SCENES.WORK, 0x66bb6a, 0);
+
+        // Bottom row - new features
+        this.createDoor(250, '🏆 Trophies', CONFIG.SCENES.TROPHY_ROOM, 0xffd700, 100);
+        this.createDoor(400, '🌱 Garden', CONFIG.SCENES.GARDEN, 0x8bc34a, 100);
+        this.createDoor(550, '🎨 Playground', CONFIG.SCENES.PLAYGROUND, 0x9c27b0, 100);
     }
 
-    createDoor(x, label, sceneKey, accentColor) {
-        const doorY = CONFIG.HEIGHT - 220;
+    createDoor(x, label, sceneKey, accentColor, yOffset = 0) {
+        const doorY = CONFIG.HEIGHT - 220 + yOffset;
         const doorContainer = this.add.container(x, doorY);
 
         const door = this.add.graphics();

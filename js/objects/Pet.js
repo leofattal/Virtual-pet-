@@ -14,6 +14,14 @@ class Pet {
         this.animationTimer = null;
         this.bobOffset = 0;
 
+        // Interactive features
+        this.isFollowingCursor = false;
+        this.cursorFollowTimer = null;
+        this.lastInteractionTime = Date.now();
+
+        // Emotion states
+        this.emotionParticles = [];
+
         this.create();
     }
 
@@ -30,6 +38,9 @@ class Pet {
 
         // Start idle animation
         this.startIdleAnimation();
+
+        // Make pet interactive (clickable, pokeable)
+        this.setupInteraction();
     }
 
     drawPet() {
@@ -556,9 +567,206 @@ class Pet {
         });
     }
 
+    // Setup interactive behaviors
+    setupInteraction() {
+        // Make container interactive
+        this.container.setSize(100, 100);
+        this.container.setInteractive({ useHandCursor: true });
+
+        // Click/tap reactions
+        this.container.on('pointerdown', () => {
+            this.onPoked();
+        });
+
+        // Start cursor following behavior (randomly)
+        this.scene.time.addEvent({
+            delay: 10000,
+            callback: () => this.maybeFollowCursor(),
+            loop: true,
+        });
+    }
+
+    // Pet gets poked/clicked
+    onPoked() {
+        this.lastInteractionTime = Date.now();
+
+        // Random reactions to being poked
+        const reactions = [
+            () => this.playJumpAnimation(),
+            () => this.playSpinAnimation(),
+            () => this.playHappyAnimation(),
+            () => this.showReactionBubble('!'),
+            () => this.showReactionBubble('?'),
+            () => this.showReactionBubble('💕'),
+        ];
+
+        const reaction = Phaser.Utils.Array.GetRandom(reactions);
+        reaction();
+
+        // Small happiness boost from interaction
+        petStats.modifyStat('happiness', 2);
+
+        soundManager.playClick();
+    }
+
+    // Jump animation
+    playJumpAnimation() {
+        const originalY = this.container.y;
+
+        this.scene.tweens.add({
+            targets: this.container,
+            y: originalY - 40,
+            duration: 300,
+            yoyo: true,
+            ease: 'Quad.easeOut',
+        });
+    }
+
+    // Spin animation
+    playSpinAnimation() {
+        this.scene.tweens.add({
+            targets: this.container,
+            angle: 360,
+            duration: 600,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                this.container.angle = 0;
+            },
+        });
+    }
+
+    // Show reaction bubble above pet
+    showReactionBubble(emoji) {
+        const bubble = this.scene.add.text(this.container.x, this.container.y - 80, emoji, {
+            fontSize: '32px',
+        }).setOrigin(0.5);
+
+        this.scene.tweens.add({
+            targets: bubble,
+            y: bubble.y - 30,
+            alpha: 0,
+            duration: 1000,
+            ease: 'Cubic.easeOut',
+            onComplete: () => bubble.destroy(),
+        });
+    }
+
+    // Maybe start following cursor
+    maybeFollowCursor() {
+        if (!this.scene || !this.scene.sys.isActive()) return;
+
+        // 20% chance to start following cursor for a bit
+        if (Math.random() < 0.2 && !this.isFollowingCursor) {
+            this.startFollowingCursor();
+        }
+    }
+
+    // Follow cursor for 5 seconds
+    startFollowingCursor() {
+        this.isFollowingCursor = true;
+
+        this.cursorFollowTimer = this.scene.time.addEvent({
+            delay: 100,
+            callback: () => {
+                if (!this.scene || !this.scene.input.activePointer) return;
+
+                const pointer = this.scene.input.activePointer;
+                const targetX = Phaser.Math.Clamp(pointer.x, 80, CONFIG.WIDTH - 80);
+                const targetY = Phaser.Math.Clamp(pointer.y, 80, CONFIG.HEIGHT - 80);
+
+                // Smoothly move towards cursor
+                const dx = targetX - this.container.x;
+                const dy = targetY - this.container.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > 10) {
+                    this.container.x += (dx / distance) * 3;
+                    this.container.y += (dy / distance) * 3;
+                }
+            },
+            repeat: 50, // 5 seconds
+        });
+
+        // Show indication
+        this.showReactionBubble('👀');
+
+        // Stop after 5 seconds
+        this.scene.time.delayedCall(5000, () => {
+            this.stopFollowingCursor();
+            // Return to center
+            this.scene.tweens.add({
+                targets: this.container,
+                x: this.x,
+                y: this.y,
+                duration: 1000,
+                ease: 'Power2',
+            });
+        });
+    }
+
+    // Stop following cursor
+    stopFollowingCursor() {
+        this.isFollowingCursor = false;
+        if (this.cursorFollowTimer) {
+            this.cursorFollowTimer.remove();
+            this.cursorFollowTimer = null;
+        }
+    }
+
+    // Excited wiggle animation
+    playWiggleAnimation() {
+        this.scene.tweens.add({
+            targets: this.container,
+            angle: { from: -10, to: 10 },
+            duration: 100,
+            yoyo: true,
+            repeat: 5,
+            ease: 'Sine.easeInOut',
+            onComplete: () => {
+                this.container.angle = 0;
+            },
+        });
+    }
+
+    // Show emotion particles (hearts, stars, etc.)
+    showEmotionParticles(emotion = 'happy') {
+        const particles = {
+            happy: ['💕', '❤️', '💖'],
+            excited: ['✨', '⭐', '🌟'],
+            surprised: ['❗', '❓', '💫'],
+            loved: ['💗', '💝', '💘'],
+        };
+
+        const particleSet = particles[emotion] || particles.happy;
+
+        for (let i = 0; i < 5; i++) {
+            this.scene.time.delayedCall(i * 100, () => {
+                if (!this.scene || !this.scene.sys.isActive()) return;
+
+                const particle = this.scene.add.text(
+                    this.container.x + (Math.random() - 0.5) * 60,
+                    this.container.y - 40,
+                    Phaser.Utils.Array.GetRandom(particleSet),
+                    { fontSize: '20px' }
+                );
+
+                this.scene.tweens.add({
+                    targets: particle,
+                    y: particle.y - 50,
+                    x: particle.x + (Math.random() - 0.5) * 30,
+                    alpha: 0,
+                    duration: 1200,
+                    ease: 'Cubic.easeOut',
+                    onComplete: () => particle.destroy(),
+                });
+            });
+        }
+    }
+
     // Clean up
     destroy() {
         this.stopIdleAnimation();
+        this.stopFollowingCursor();
         if (this.container) {
             this.container.destroy();
         }

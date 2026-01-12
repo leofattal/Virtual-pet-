@@ -2,9 +2,16 @@
 
 class SupabaseClient {
     constructor() {
-        // Get environment variables (these will be replaced by your actual values)
-        const SUPABASE_URL = 'https://eipbkokogsncrkelpwkj.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcGJrb2tvZ3NuY3JrZWxwd2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwMDIyNzcsImV4cCI6MjA4MzU3ODI3N30.6f72RJUDjxJN62CuLSmnlin9463QFEfHMq_JQmt2IMU';
+        // Get environment variables from window object (set by Vercel or build process)
+        // Fallback to hardcoded values for local development
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://eipbkokogsncrkelpwkj.supabase.co';
+        const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcGJrb2tvZ3NuY3JrZWxwd2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwMDIyNzcsImV4cCI6MjA4MzU3ODI3N30.6f72RJUDjxJN62CuLSmnlin9463QFEfHMq_JQmt2IMU';
+
+        console.log('[SupabaseClient] Initializing...');
+        console.log('[SupabaseClient] URL:', SUPABASE_URL);
+        console.log('[SupabaseClient] Current origin:', window.location.origin);
+        console.log('[SupabaseClient] Current pathname:', window.location.pathname);
+        console.log('[SupabaseClient] Current hash:', window.location.hash);
 
         // Initialize Supabase client
         this.client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -17,43 +24,62 @@ class SupabaseClient {
     }
 
     async initAuth() {
+        console.log('[SupabaseClient] Checking for existing session...');
+
         // Get current session
-        const { data: { session } } = await this.client.auth.getSession();
+        const { data: { session }, error: sessionError } = await this.client.auth.getSession();
+
+        if (sessionError) {
+            console.error('[SupabaseClient] Error getting session:', sessionError);
+        }
 
         if (session) {
             this.currentUser = session.user;
-            console.log('User already signed in:', this.currentUser.email);
+            console.log('[SupabaseClient] User already signed in:', this.currentUser.email);
+        } else {
+            console.log('[SupabaseClient] No active session found');
         }
 
         // Listen for auth changes
         this.client.auth.onAuthStateChange((event, session) => {
+            console.log('[SupabaseClient] Auth state changed:', event);
+
             if (event === 'SIGNED_IN' && session) {
                 this.currentUser = session.user;
-                console.log('User signed in:', this.currentUser.email);
+                console.log('[SupabaseClient] User signed in:', this.currentUser.email);
 
                 // Initialize user data in database
                 this.initializeUserData();
             } else if (event === 'SIGNED_OUT') {
                 this.currentUser = null;
-                console.log('User signed out');
+                console.log('[SupabaseClient] User signed out');
+            } else if (event === 'TOKEN_REFRESHED') {
+                console.log('[SupabaseClient] Token refreshed');
+            } else if (event === 'USER_UPDATED') {
+                console.log('[SupabaseClient] User updated');
             }
         });
     }
 
     // Sign in with Google
     async signInWithGoogle() {
+        const redirectUrl = window.location.origin;
+        console.log('[SupabaseClient] Starting Google OAuth...');
+        console.log('[SupabaseClient] Redirect URL:', redirectUrl);
+
         const { data, error } = await this.client.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin
+                redirectTo: redirectUrl
             }
         });
 
         if (error) {
-            console.error('Error signing in with Google:', error);
+            console.error('[SupabaseClient] Error signing in with Google:', error);
             return { success: false, error };
         }
 
+        console.log('[SupabaseClient] OAuth initiated successfully');
         return { success: true, data };
     }
 

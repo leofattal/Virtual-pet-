@@ -147,6 +147,14 @@ class ArcadeScene extends Phaser.Scene {
                 scene: CONFIG.SCENES.MAZE,
             },
             {
+                key: 'memory',
+                name: 'Memory Match',
+                description: 'Match the pairs!\nTest your memory.',
+                color: 0x9c27b0,
+                icon: '🧠',
+                scene: CONFIG.SCENES.MEMORY_GAME,
+            },
+            {
                 key: 'clicker',
                 name: 'Coin Rush',
                 description: 'Click fast!\nEarn coins quickly.',
