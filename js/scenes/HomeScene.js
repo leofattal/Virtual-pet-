@@ -269,84 +269,159 @@ class HomeScene extends Phaser.Scene {
 
         const door = this.add.graphics();
 
-        // Door frame
-        door.fillStyle(0x5d4037, 1);
-        door.fillRect(-35, -70, 70, 140);
+        // Shadow
+        door.fillStyle(0x000000, 0.2);
+        door.fillRoundedRect(-32, -62, 64, 134, 8);
 
-        // Door
-        door.fillStyle(0x8d6e63, 1);
-        door.fillRect(-30, -65, 60, 130);
+        // Door frame (dark wood)
+        door.fillStyle(0x4a3428, 1);
+        door.fillRoundedRect(-35, -70, 70, 140, 6);
 
-        // Door panels
-        door.fillStyle(0x6d4c41, 1);
-        door.fillRect(-25, -60, 22, 50);
-        door.fillRect(3, -60, 22, 50);
-        door.fillRect(-25, 0, 22, 50);
-        door.fillRect(3, 0, 22, 50);
-
-        // Door handle
-        door.fillStyle(0xffc107, 1);
-        door.fillCircle(20, 5, 5);
-
-        // Door sign (colored based on room)
+        // Main door (gradient effect with multiple rectangles)
         door.fillStyle(accentColor, 1);
-        door.fillRect(-25, -80, 50, 14);
+        door.fillRoundedRect(-30, -65, 60, 130, 4);
+
+        // Door highlight (top lighter)
+        door.fillStyle(0xffffff, 0.15);
+        door.fillRoundedRect(-30, -65, 60, 40, 4);
+
+        // Door shadow (bottom darker)
+        door.fillStyle(0x000000, 0.15);
+        door.fillRoundedRect(-30, 25, 60, 40, 4);
+
+        // Decorative window (if not bottom row)
+        if (yOffset === 0) {
+            door.fillStyle(0xffffff, 0.3);
+            door.fillRoundedRect(-20, -50, 40, 30, 4);
+            // Window panes
+            door.lineStyle(2, accentColor, 0.5);
+            door.lineBetween(0, -50, 0, -20);
+            door.lineBetween(-20, -35, 20, -35);
+        }
+
+        // Door handle (metallic)
+        door.fillStyle(0xffd700, 1);
+        door.fillCircle(22, 10, 6);
+        door.fillStyle(0xffeb3b, 1);
+        door.fillCircle(20, 8, 5);
+
+        // Decorative details
+        door.lineStyle(2, 0x000000, 0.2);
+        door.strokeRoundedRect(-28, -63, 56, 126, 4);
 
         doorContainer.add(door);
 
-        // Room sign text
-        const sign = this.add.text(0, -72, label, {
-            fontSize: '10px',
+        // Icon above door
+        const emoji = label.split(' ')[0]; // Extract emoji
+        const iconBg = this.add.graphics();
+        iconBg.fillStyle(accentColor, 1);
+        iconBg.fillCircle(0, -85, 18);
+        iconBg.lineStyle(3, 0xffffff, 0.8);
+        iconBg.strokeCircle(0, -85, 18);
+        doorContainer.add(iconBg);
+
+        const icon = this.add.text(0, -85, emoji, {
+            fontSize: '20px',
+        }).setOrigin(0.5);
+        doorContainer.add(icon);
+
+        // Room label below
+        const labelText = label.substring(emoji.length).trim(); // Remove emoji
+        const sign = this.add.text(0, 80, labelText, {
+            fontSize: '12px',
             fontFamily: CONFIG.FONT.FAMILY,
             color: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 3,
         }).setOrigin(0.5);
         doorContainer.add(sign);
 
+        // Glow effect container
+        const glowGraphics = this.add.graphics();
+        doorContainer.add(glowGraphics);
+        doorContainer.setData('glowGraphics', glowGraphics);
+        doorContainer.setData('door', door);
+        doorContainer.setData('accentColor', accentColor);
+        doorContainer.setData('yOffset', yOffset);
+
         // Make door interactive
-        doorContainer.setSize(70, 140);
+        doorContainer.setSize(70, 160);
         doorContainer.setInteractive({ useHandCursor: true });
 
         doorContainer.on('pointerover', () => {
-            door.clear();
-            door.fillStyle(0x5d4037, 1);
-            door.fillRect(-35, -70, 70, 140);
-            door.fillStyle(0xa1887f, 1);
-            door.fillRect(-30, -65, 60, 130);
-            door.fillStyle(0x8d6e63, 1);
-            door.fillRect(-25, -60, 22, 50);
-            door.fillRect(3, -60, 22, 50);
-            door.fillRect(-25, 0, 22, 50);
-            door.fillRect(3, 0, 22, 50);
-            door.fillStyle(0xffc107, 1);
-            door.fillCircle(20, 5, 5);
-            door.fillStyle(accentColor, 1);
-            door.fillRect(-25, -80, 50, 14);
+            // Add glow effect
+            glowGraphics.clear();
+            glowGraphics.lineStyle(4, accentColor, 0.8);
+            glowGraphics.strokeRoundedRect(-32, -67, 64, 134, 6);
+            glowGraphics.lineStyle(2, 0xffffff, 0.6);
+            glowGraphics.strokeRoundedRect(-34, -69, 68, 138, 6);
+
+            // Scale up slightly
+            this.tweens.add({
+                targets: doorContainer,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 150,
+                ease: 'Back.easeOut',
+            });
+
+            // Icon bounce
+            this.tweens.add({
+                targets: icon,
+                y: -90,
+                duration: 200,
+                yoyo: true,
+                ease: 'Quad.easeOut',
+            });
         });
 
         doorContainer.on('pointerout', () => {
-            door.clear();
-            door.fillStyle(0x5d4037, 1);
-            door.fillRect(-35, -70, 70, 140);
-            door.fillStyle(0x8d6e63, 1);
-            door.fillRect(-30, -65, 60, 130);
-            door.fillStyle(0x6d4c41, 1);
-            door.fillRect(-25, -60, 22, 50);
-            door.fillRect(3, -60, 22, 50);
-            door.fillRect(-25, 0, 22, 50);
-            door.fillRect(3, 0, 22, 50);
-            door.fillStyle(0xffc107, 1);
-            door.fillCircle(20, 5, 5);
-            door.fillStyle(accentColor, 1);
-            door.fillRect(-25, -80, 50, 14);
+            // Remove glow
+            glowGraphics.clear();
+
+            // Scale back
+            this.tweens.add({
+                targets: doorContainer,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 150,
+                ease: 'Back.easeIn',
+            });
         });
 
         doorContainer.on('pointerdown', () => {
             soundManager.playClick();
+
+            // Click animation - door opens slightly
+            this.tweens.add({
+                targets: door,
+                x: 5,
+                duration: 100,
+                yoyo: true,
+            });
+
+            // Flash effect
+            const flash = this.add.graphics();
+            flash.fillStyle(0xffffff, 0.5);
+            flash.fillCircle(x, doorY, 50);
+            this.tweens.add({
+                targets: flash,
+                alpha: 0,
+                scaleX: 2,
+                scaleY: 2,
+                duration: 300,
+                onComplete: () => flash.destroy(),
+            });
+
+            // Transition
             this.cameras.main.fadeOut(300, 0, 0, 0);
             this.time.delayedCall(300, () => {
                 this.scene.start(sceneKey);
             });
         });
+
+        return doorContainer;
     }
 
     createDragHints() {
