@@ -249,18 +249,19 @@ class HomeScene extends Phaser.Scene {
     }
 
     createRoomDoors() {
-        // Create doors to different rooms - 2 rows
-        // Top row
-        this.createDoor(100, '🛏️ Bedroom', CONFIG.SCENES.BEDROOM, 0x7986cb, 0);
-        this.createDoor(200, '🍽️ Kitchen', CONFIG.SCENES.KITCHEN, 0xff7043, 0);
-        this.createDoor(300, '👗 Closet', CONFIG.SCENES.CLOSET, 0xce93d8, 0);
-        this.createDoor(400, '🎮 Arcade', CONFIG.SCENES.ARCADE, 0x4dd0e1, 0);
-        this.createDoor(500, '💼 Work', CONFIG.SCENES.WORK, 0x66bb6a, 0);
+        // Create doors to different rooms - 2 rows with proper spacing
+        // Top row - main rooms (80px spacing)
+        this.createDoor(90, '🛏️ Bedroom', CONFIG.SCENES.BEDROOM, 0x7986cb, -20);
+        this.createDoor(210, '🍽️ Kitchen', CONFIG.SCENES.KITCHEN, 0xff7043, -20);
+        this.createDoor(330, '👗 Closet', CONFIG.SCENES.CLOSET, 0xce93d8, -20);
+        this.createDoor(450, '🎮 Arcade', CONFIG.SCENES.ARCADE, 0x4dd0e1, -20);
+        this.createDoor(570, '💼 Work', CONFIG.SCENES.WORK, 0x66bb6a, -20);
+        this.createDoor(690, '🛁 Bathroom', CONFIG.SCENES.BATHROOM, 0x4dd0e1, -20);
 
-        // Bottom row - new features
-        this.createDoor(250, '🏆 Trophies', CONFIG.SCENES.TROPHY_ROOM, 0xffd700, 100);
-        this.createDoor(400, '🌱 Garden', CONFIG.SCENES.GARDEN, 0x8bc34a, 100);
-        this.createDoor(550, '🎨 Playground', CONFIG.SCENES.PLAYGROUND, 0x9c27b0, 100);
+        // Bottom row - new features (120px spacing for less clutter)
+        this.createDoor(150, '🏆 Trophies', CONFIG.SCENES.TROPHY_ROOM, 0xffd700, 80);
+        this.createDoor(330, '🌱 Garden', CONFIG.SCENES.GARDEN, 0x8bc34a, 80);
+        this.createDoor(510, '🎨 Playground', CONFIG.SCENES.PLAYGROUND, 0x9c27b0, 80);
     }
 
     createDoor(x, label, sceneKey, accentColor, yOffset = 0) {
