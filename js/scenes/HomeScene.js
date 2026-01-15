@@ -250,18 +250,18 @@ class HomeScene extends Phaser.Scene {
 
     createRoomDoors() {
         // Create doors to different rooms - 2 rows with proper spacing
-        // Top row - main rooms (80px spacing)
-        this.createDoor(90, '🛏️ Bedroom', CONFIG.SCENES.BEDROOM, 0x7986cb, -20);
-        this.createDoor(210, '🍽️ Kitchen', CONFIG.SCENES.KITCHEN, 0xff7043, -20);
-        this.createDoor(330, '👗 Closet', CONFIG.SCENES.CLOSET, 0xce93d8, -20);
-        this.createDoor(450, '🎮 Arcade', CONFIG.SCENES.ARCADE, 0x4dd0e1, -20);
-        this.createDoor(570, '💼 Work', CONFIG.SCENES.WORK, 0x66bb6a, -20);
-        this.createDoor(690, '🛁 Bathroom', CONFIG.SCENES.BATHROOM, 0x4dd0e1, -20);
+        // Top row - main rooms (spacing of 130px to avoid any overlap)
+        this.createDoor(80, '🛏️ Bedroom', CONFIG.SCENES.BEDROOM, 0x7986cb, -30);
+        this.createDoor(210, '🍽️ Kitchen', CONFIG.SCENES.KITCHEN, 0xff7043, -30);
+        this.createDoor(340, '👗 Closet', CONFIG.SCENES.CLOSET, 0xce93d8, -30);
+        this.createDoor(470, '🎮 Arcade', CONFIG.SCENES.ARCADE, 0x4dd0e1, -30);
+        this.createDoor(600, '💼 Work', CONFIG.SCENES.WORK, 0x66bb6a, -30);
 
-        // Bottom row - new features (120px spacing for less clutter)
-        this.createDoor(150, '🏆 Trophies', CONFIG.SCENES.TROPHY_ROOM, 0xffd700, 80);
-        this.createDoor(330, '🌱 Garden', CONFIG.SCENES.GARDEN, 0x8bc34a, 80);
-        this.createDoor(510, '🎨 Playground', CONFIG.SCENES.PLAYGROUND, 0x9c27b0, 80);
+        // Bottom row - new features (wider spacing, offset from top row)
+        this.createDoor(145, '🏆 Trophies', CONFIG.SCENES.TROPHY_ROOM, 0xffd700, 90);
+        this.createDoor(340, '🌱 Garden', CONFIG.SCENES.GARDEN, 0x8bc34a, 90);
+        this.createDoor(535, '🎨 Playground', CONFIG.SCENES.PLAYGROUND, 0x9c27b0, 90);
+        this.createDoor(730, '🛁 Bathroom', CONFIG.SCENES.BATHROOM, 0x64b5f6, 90);
     }
 
     createDoor(x, label, sceneKey, accentColor, yOffset = 0) {
@@ -346,9 +346,12 @@ class HomeScene extends Phaser.Scene {
         doorContainer.setData('accentColor', accentColor);
         doorContainer.setData('yOffset', yOffset);
 
-        // Make door interactive
-        doorContainer.setSize(70, 160);
+        // Make door interactive - use larger bounds for easier clicking
+        doorContainer.setSize(80, 170);
         doorContainer.setInteractive({ useHandCursor: true });
+
+        // Debug - log door creation
+        console.log(`Door created: ${label} at x:${x}, y:${doorY}`);
 
         doorContainer.on('pointerover', () => {
             // Add glow effect
@@ -392,7 +395,11 @@ class HomeScene extends Phaser.Scene {
         });
 
         doorContainer.on('pointerdown', () => {
+            console.log(`Door clicked: ${label} -> ${sceneKey}`);
             soundManager.playClick();
+
+            // Disable all other doors during transition
+            this.input.enabled = false;
 
             // Click animation - door opens slightly
             this.tweens.add({
@@ -406,6 +413,7 @@ class HomeScene extends Phaser.Scene {
             const flash = this.add.graphics();
             flash.fillStyle(0xffffff, 0.5);
             flash.fillCircle(x, doorY, 50);
+            flash.setDepth(200);
             this.tweens.add({
                 targets: flash,
                 alpha: 0,
@@ -421,6 +429,9 @@ class HomeScene extends Phaser.Scene {
                 this.scene.start(sceneKey);
             });
         });
+
+        // Set depth based on yOffset (bottom row should be in front)
+        doorContainer.setDepth(yOffset > 0 ? 10 : 5);
 
         return doorContainer;
     }
