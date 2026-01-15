@@ -6,41 +6,61 @@ class GardenScene extends Phaser.Scene {
     }
 
     create() {
-        // Create background
-        this.createBackground();
+        console.log('GardenScene: create() called');
 
-        // Title
-        this.add.text(CONFIG.WIDTH / 2, 30, '🌱 Garden', {
-            fontSize: CONFIG.FONT.SIZE_LARGE,
-            fontFamily: CONFIG.FONT.FAMILY,
-            color: '#ffffff',
-        }).setOrigin(0.5);
+        try {
+            // Create background
+            this.createBackground();
+            console.log('GardenScene: background created');
 
-        // Instructions
-        this.add.text(CONFIG.WIDTH / 2, 60, 'Plant seeds and grow food for your pet!', {
-            fontSize: CONFIG.FONT.SIZE_SMALL,
-            fontFamily: CONFIG.FONT.FAMILY,
-            color: '#cccccc',
-        }).setOrigin(0.5);
+            // Title
+            this.add.text(CONFIG.WIDTH / 2, 30, '🌱 Garden', {
+                fontSize: CONFIG.FONT.SIZE_LARGE,
+                fontFamily: CONFIG.FONT.FAMILY,
+                color: '#ffffff',
+            }).setOrigin(0.5);
 
-        // Create garden plots
-        this.createGardenPlots();
+            // Instructions
+            this.add.text(CONFIG.WIDTH / 2, 60, 'Plant seeds and grow food for your pet!', {
+                fontSize: CONFIG.FONT.SIZE_SMALL,
+                fontFamily: CONFIG.FONT.FAMILY,
+                color: '#cccccc',
+            }).setOrigin(0.5);
 
-        // Create seed shop button
-        this.createSeedShopButton();
+            // Create garden plots
+            this.createGardenPlots();
+            console.log('GardenScene: garden plots created');
 
-        // Back button
-        this.createBackButton();
+            // Create seed shop button
+            this.createSeedShopButton();
+            console.log('GardenScene: seed shop button created');
 
-        // Update timer for plant growth
-        this.time.addEvent({
-            delay: 10000, // Check every 10 seconds
-            callback: () => this.updatePlants(),
-            loop: true,
-        });
+            // Back button
+            this.createBackButton();
+            console.log('GardenScene: back button created');
 
-        // Fade in
-        this.cameras.main.fadeIn(300, 0, 0, 0);
+            // Update timer for plant growth
+            this.time.addEvent({
+                delay: 10000, // Check every 10 seconds
+                callback: () => this.updatePlants(),
+                loop: true,
+            });
+
+            // Fade in
+            this.cameras.main.fadeIn(300, 0, 0, 0);
+
+            console.log('GardenScene: fully loaded');
+        } catch (error) {
+            console.error('GardenScene: Error in create():', error);
+            // Show error on screen
+            this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2,
+                'Error loading Garden scene\nCheck console for details', {
+                fontSize: '18px',
+                fontFamily: CONFIG.FONT.FAMILY,
+                color: '#ff0000',
+                align: 'center',
+            }).setOrigin(0.5);
+        }
     }
 
     createBackground() {
