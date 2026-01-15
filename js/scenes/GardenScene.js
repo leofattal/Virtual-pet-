@@ -404,8 +404,7 @@ class GardenScene extends Phaser.Scene {
 
         // Create proper interactive zone
         const hitArea = new Phaser.Geom.Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
-        button.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains);
-        button.setCursor('pointer');
+        button.setInteractive({ hitArea: hitArea, hitAreaCallback: Phaser.Geom.Rectangle.Contains, useHandCursor: true });
 
         button.on('pointerover', () => {
             button.clear();
@@ -449,8 +448,7 @@ class GardenScene extends Phaser.Scene {
 
         // Create proper interactive zone
         const hitArea = new Phaser.Geom.Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
-        button.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains);
-        button.setCursor('pointer');
+        button.setInteractive({ hitArea: hitArea, hitAreaCallback: Phaser.Geom.Rectangle.Contains, useHandCursor: true });
 
         button.on('pointerover', () => {
             button.clear();
