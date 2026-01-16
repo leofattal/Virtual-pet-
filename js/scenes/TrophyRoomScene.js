@@ -6,38 +6,83 @@ class TrophyRoomScene extends Phaser.Scene {
     }
 
     create() {
-        // Create background
-        this.createBackground();
+        console.log('TrophyRoomScene: Starting create...');
 
-        // Title
-        this.add.text(CONFIG.WIDTH / 2, 30, '🏆 Trophy Room', {
-            fontSize: CONFIG.FONT.SIZE_LARGE,
+        try {
+            // Check if achievementSystem exists
+            if (typeof achievementSystem === 'undefined') {
+                console.error('TrophyRoomScene: achievementSystem is undefined!');
+                this.showError('Achievement system not loaded');
+                return;
+            }
+
+            console.log('TrophyRoomScene: achievementSystem exists');
+
+            // Create background
+            this.createBackground();
+            console.log('TrophyRoomScene: Background created');
+
+            // Title
+            this.add.text(CONFIG.WIDTH / 2, 30, '🏆 Trophy Room', {
+                fontSize: CONFIG.FONT.SIZE_LARGE,
+                fontFamily: CONFIG.FONT.FAMILY,
+                color: '#ffd700',
+            }).setOrigin(0.5);
+
+            // Progress text
+            const progress = achievementSystem.getProgress();
+            const unlocked = achievementSystem.getUnlockedAchievements().length;
+            const total = Object.keys(achievementSystem.achievements).length;
+
+            console.log(`TrophyRoomScene: Progress=${progress}%, Unlocked=${unlocked}/${total}`);
+
+            this.add.text(CONFIG.WIDTH / 2, 60, `${unlocked}/${total} Achievements (${progress}%)`, {
+                fontSize: CONFIG.FONT.SIZE_MEDIUM,
+                fontFamily: CONFIG.FONT.FAMILY,
+                color: '#ffffff',
+            }).setOrigin(0.5);
+
+            // Progress bar
+            this.createProgressBar(progress);
+            console.log('TrophyRoomScene: Progress bar created');
+
+            // Back button
+            this.createBackButton();
+            console.log('TrophyRoomScene: Back button created');
+
+            // Achievement grid
+            this.createAchievementGrid();
+            console.log('TrophyRoomScene: Achievement grid created');
+
+            // Fade in
+            this.cameras.main.fadeIn(300, 0, 0, 0);
+            console.log('TrophyRoomScene: Scene creation complete!');
+        } catch (error) {
+            console.error('TrophyRoomScene: Error during create:', error);
+            this.showError(error.message);
+        }
+    }
+
+    showError(message) {
+        this.add.rectangle(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2, CONFIG.WIDTH, CONFIG.HEIGHT, 0x000000);
+        this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2, `Error: ${message}`, {
+            fontSize: '16px',
             fontFamily: CONFIG.FONT.FAMILY,
-            color: '#ffd700',
+            color: '#ff0000',
         }).setOrigin(0.5);
 
-        // Progress text
-        const progress = achievementSystem.getProgress();
-        const unlocked = achievementSystem.getUnlockedAchievements().length;
-        const total = Object.keys(achievementSystem.achievements).length;
-
-        this.add.text(CONFIG.WIDTH / 2, 60, `${unlocked}/${total} Achievements (${progress}%)`, {
-            fontSize: CONFIG.FONT.SIZE_MEDIUM,
+        // Add back button even on error
+        const backBtn = this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 + 50, '← Back to Home', {
+            fontSize: '14px',
             fontFamily: CONFIG.FONT.FAMILY,
             color: '#ffffff',
-        }).setOrigin(0.5);
+            backgroundColor: '#333333',
+            padding: { x: 10, y: 5 },
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-        // Progress bar
-        this.createProgressBar(progress);
-
-        // Back button
-        this.createBackButton();
-
-        // Achievement grid
-        this.createAchievementGrid();
-
-        // Fade in
-        this.cameras.main.fadeIn(300, 0, 0, 0);
+        backBtn.on('pointerdown', () => {
+            this.scene.start(CONFIG.SCENES.HOME);
+        });
     }
 
     createBackground() {
@@ -237,22 +282,39 @@ class TrophyRoomScene extends Phaser.Scene {
     }
 
     createBackButton() {
+        const buttonX = CONFIG.WIDTH / 2;
+        const buttonY = CONFIG.HEIGHT - 32.5;
+        const buttonWidth = 120;
+        const buttonHeight = 35;
+
         const button = this.add.graphics();
         button.fillStyle(CONFIG.COLORS.PRIMARY, 1);
-        button.fillRoundedRect(CONFIG.WIDTH / 2 - 60, CONFIG.HEIGHT - 50, 120, 35, 8);
+        button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+        button.setPosition(buttonX, buttonY);
 
-        const text = this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT - 32.5, '← Back', {
+        const text = this.add.text(buttonX, buttonY, '← Back', {
             fontSize: CONFIG.FONT.SIZE_MEDIUM,
             fontFamily: CONFIG.FONT.FAMILY,
             color: '#ffffff',
         }).setOrigin(0.5);
 
-        const container = this.add.container(0, 0);
-        container.add([button, text]);
-        container.setSize(120, 35);
-        container.setInteractive({ useHandCursor: true });
+        // Use a zone for reliable hit detection
+        const hitZone = this.add.zone(buttonX, buttonY, buttonWidth, buttonHeight);
+        hitZone.setInteractive({ useHandCursor: true });
 
-        container.on('pointerdown', () => {
+        hitZone.on('pointerover', () => {
+            button.clear();
+            button.fillStyle(0x5a9bd4, 1);
+            button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+        });
+
+        hitZone.on('pointerout', () => {
+            button.clear();
+            button.fillStyle(CONFIG.COLORS.PRIMARY, 1);
+            button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+        });
+
+        hitZone.on('pointerdown', () => {
             soundManager.playClick();
             this.cameras.main.fadeOut(300, 0, 0, 0);
             this.time.delayedCall(300, () => {
