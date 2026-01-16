@@ -323,22 +323,39 @@ class MemoryGameScene extends Phaser.Scene {
     }
 
     createBackButton() {
+        const buttonX = CONFIG.WIDTH / 2;
+        const buttonY = CONFIG.HEIGHT - 32.5;
+        const buttonWidth = 120;
+        const buttonHeight = 35;
+
         const button = this.add.graphics();
         button.fillStyle(CONFIG.COLORS.PRIMARY, 1);
-        button.fillRoundedRect(CONFIG.WIDTH / 2 - 60, CONFIG.HEIGHT - 50, 120, 35, 8);
+        button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+        button.setPosition(buttonX, buttonY);
 
-        const text = this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT - 32.5, '← Back', {
+        this.add.text(buttonX, buttonY, '← Back', {
             fontSize: CONFIG.FONT.SIZE_MEDIUM,
             fontFamily: CONFIG.FONT.FAMILY,
             color: '#ffffff',
         }).setOrigin(0.5);
 
-        const container = this.add.container(0, 0);
-        container.add([button, text]);
-        container.setSize(120, 35);
-        container.setInteractive({ useHandCursor: true });
+        // Use a zone for reliable hit detection
+        const hitZone = this.add.zone(buttonX, buttonY, buttonWidth, buttonHeight);
+        hitZone.setInteractive({ useHandCursor: true });
 
-        container.on('pointerdown', () => {
+        hitZone.on('pointerover', () => {
+            button.clear();
+            button.fillStyle(0x5a9bd4, 1);
+            button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+        });
+
+        hitZone.on('pointerout', () => {
+            button.clear();
+            button.fillStyle(CONFIG.COLORS.PRIMARY, 1);
+            button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+        });
+
+        hitZone.on('pointerdown', () => {
             soundManager.playClick();
             this.cameras.main.fadeOut(300, 0, 0, 0);
             this.time.delayedCall(300, () => {

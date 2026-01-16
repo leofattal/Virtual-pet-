@@ -385,88 +385,90 @@ class GardenScene extends Phaser.Scene {
     }
 
     createSeedShopButton() {
-        const buttonX = 20;
-        const buttonY = CONFIG.HEIGHT - 50;
+        const buttonX = 80;
+        const buttonY = CONFIG.HEIGHT - 32.5;
         const buttonWidth = 120;
         const buttonHeight = 35;
 
         const button = this.add.graphics();
         button.fillStyle(0x66bb6a, 1);
-        button.fillRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+        button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
         button.lineStyle(2, 0x4caf50, 1);
-        button.strokeRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+        button.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+        button.setPosition(buttonX, buttonY);
 
-        const text = this.add.text(buttonX + buttonWidth / 2, buttonY + buttonHeight / 2, '🌾 Seeds', {
+        this.add.text(buttonX, buttonY, '🌾 Seeds', {
             fontSize: CONFIG.FONT.SIZE_MEDIUM,
             fontFamily: CONFIG.FONT.FAMILY,
             color: '#ffffff',
         }).setOrigin(0.5);
 
-        // Create proper interactive zone
-        const hitArea = new Phaser.Geom.Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
-        button.setInteractive({ hitArea: hitArea, hitAreaCallback: Phaser.Geom.Rectangle.Contains, useHandCursor: true });
+        // Use zone for reliable hit detection
+        const hitZone = this.add.zone(buttonX, buttonY, buttonWidth, buttonHeight);
+        hitZone.setInteractive({ useHandCursor: true });
 
-        button.on('pointerover', () => {
+        hitZone.on('pointerover', () => {
             button.clear();
             button.fillStyle(0x81c784, 1);
-            button.fillRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+            button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
             button.lineStyle(2, 0x66bb6a, 1);
-            button.strokeRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+            button.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
         });
 
-        button.on('pointerout', () => {
+        hitZone.on('pointerout', () => {
             button.clear();
             button.fillStyle(0x66bb6a, 1);
-            button.fillRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+            button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
             button.lineStyle(2, 0x4caf50, 1);
-            button.strokeRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+            button.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
         });
 
-        button.on('pointerdown', () => {
+        hitZone.on('pointerdown', () => {
             soundManager.playClick();
             this.showMessage('Seeds are free! Just click empty plots to plant.');
         });
     }
 
     createBackButton() {
-        const buttonX = CONFIG.WIDTH - 140;
-        const buttonY = CONFIG.HEIGHT - 50;
+        const buttonX = CONFIG.WIDTH - 80;
+        const buttonY = CONFIG.HEIGHT - 32.5;
         const buttonWidth = 120;
         const buttonHeight = 35;
 
         const button = this.add.graphics();
         button.fillStyle(CONFIG.COLORS.PRIMARY, 1);
-        button.fillRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+        button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
         button.lineStyle(2, CONFIG.COLORS.SECONDARY, 1);
-        button.strokeRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+        button.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+        button.setPosition(buttonX, buttonY);
 
-        const text = this.add.text(buttonX + buttonWidth / 2, buttonY + buttonHeight / 2, '← Home', {
+        this.add.text(buttonX, buttonY, '← Home', {
             fontSize: CONFIG.FONT.SIZE_MEDIUM,
             fontFamily: CONFIG.FONT.FAMILY,
             color: '#ffffff',
         }).setOrigin(0.5);
 
-        // Create proper interactive zone
-        const hitArea = new Phaser.Geom.Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
-        button.setInteractive({ hitArea: hitArea, hitAreaCallback: Phaser.Geom.Rectangle.Contains, useHandCursor: true });
+        // Use zone for reliable hit detection
+        const hitZone = this.add.zone(buttonX, buttonY, buttonWidth, buttonHeight);
+        hitZone.setInteractive({ useHandCursor: true });
 
-        button.on('pointerover', () => {
+        hitZone.on('pointerover', () => {
             button.clear();
             button.fillStyle(CONFIG.COLORS.SECONDARY, 1);
-            button.fillRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+            button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
             button.lineStyle(2, CONFIG.COLORS.PRIMARY, 1);
-            button.strokeRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+            button.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
         });
 
-        button.on('pointerout', () => {
+        hitZone.on('pointerout', () => {
             button.clear();
             button.fillStyle(CONFIG.COLORS.PRIMARY, 1);
-            button.fillRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+            button.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
             button.lineStyle(2, CONFIG.COLORS.SECONDARY, 1);
-            button.strokeRoundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 8);
+            button.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
         });
 
-        button.on('pointerdown', () => {
+        hitZone.on('pointerdown', () => {
             soundManager.playClick();
             this.cameras.main.fadeOut(300, 0, 0, 0);
             this.time.delayedCall(300, () => {
